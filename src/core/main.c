@@ -6,7 +6,7 @@
 #endif
 
 int main(){
-    CreateWindow(640, 480, false);
+    CreateWindow(3860, 2160, false);
 
     while(true){
 

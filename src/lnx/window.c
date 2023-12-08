@@ -5,11 +5,14 @@ Window win;
 GC gc;
 XEvent event;
 
-char* scrnpxls;
+u_int8_t* scrnpxls;
 
 u_int16_t ww, wh;
 
+void OnResize();
+
 bool CreateWindow(u_int16_t windowWidth, u_int16_t windowHeight, bool fullscreen){
+    //implement fullscreen
     ww = windowWidth;
     wh = windowHeight;
 
@@ -21,41 +24,39 @@ bool CreateWindow(u_int16_t windowWidth, u_int16_t windowHeight, bool fullscreen
 
     XStoreName(dspl, win, "DOOM");
 
-//    XSelectInput(dspl, win, 
-//        ExposureMask | KeyPressMask);
+    XSelectInput(dspl, win, KeyPressMask | PointerMotionMask);
     XSelectInput(dspl, win, ExposureMask);
     XMapWindow(dspl, win);
+    
+    XResizeWindow(dspl, win, ww, wh);
 
-    scrnpxls = malloc(sizeof(u_int32_t) * ww*wh);
-    for(u_int32_t i = 0; i < ww*wh; i++){
-        scrnpxls[i] = rand() % 256;
+    scrnpxls = malloc(ww*wh*4); // test pattern
+    for(u_int16_t x = 0; x < ww; x++){
+        for(int16_t y = 0; y < wh; y++){
+            scrnpxls[(y*ww+x)*4 + 0] = x%255;
+            scrnpxls[(y*ww+x)*4 + 1] = y%255;
+            scrnpxls[(y*ww+x)*4 + 2] = x%255;
+            scrnpxls[(y*ww+x)*4 + 3] = 255;
+        }
     }
 
 
 }
 
 void UpdateWindow(){
-    if(XPending(dspl) > 0){
+    Pixmap img = XCreatePixmap(dspl, win, ww, wh, DefaultDepth(dspl, DefaultScreen(dspl))); 
+    XImage *ximage = XCreateImage(dspl, DefaultVisual(dspl, DefaultScreen(dspl)),
+                                  DefaultDepth(dspl, DefaultScreen(dspl)),
+                                  ZPixmap, 0, scrnpxls, ww, wh, 32, 0);
 
-    
-        printf("fag\n");;
-    XNextEvent(dspl, &event);
+    XPutImage(dspl, img, gc, ximage, 0, 0, 0, 0, ww, wh);
+    XCopyArea(dspl, img, win, gc, 0, 0, ww, wh, 0, 0);
+    XFreePixmap(dspl, img);
 
-    if(event.type == Expose){
-        Pixmap img = XCreateBitmapFromData(dspl, win, scrnpxls, ww, wh); 
-        XCopyPlane(dspl, img, win, gc, 0, 0, ww, wh, 0, 0, 1);
-
-        XFlush(dspl);
-    }
-    }
-    else{
-    usleep(10000);
-
-    }
-        
-   
+    XFlush(dspl);
 }
 
 void DestroyWindow(){
+    XDestroyWindow(dspl, win);
     free(scrnpxls);
 }

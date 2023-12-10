@@ -24,8 +24,7 @@ bool CreateWindow(u_int16_t windowWidth, u_int16_t windowHeight, bool fullscreen
 
     XStoreName(dspl, win, "DOOM");
 
-    XSelectInput(dspl, win, KeyPressMask | PointerMotionMask);
-    XSelectInput(dspl, win, ExposureMask);
+    XSelectInput(dspl, win, KeyPressMask | PointerMotionMask | StructureNotifyMask);
     XMapWindow(dspl, win);
     
     XResizeWindow(dspl, win, ww, wh);
@@ -44,6 +43,20 @@ bool CreateWindow(u_int16_t windowWidth, u_int16_t windowHeight, bool fullscreen
 }
 
 void UpdateWindow(){
+    while(XPending(dspl) > 0){
+        XNextEvent(dspl, &event);
+
+        if(event.type == ConfigureNotify){
+            if(ww != event.xconfigure.width || wh != event.xconfigure.height){
+                ww = event.xconfigure.width;
+                wh = event.xconfigure.height;
+                OnResize();
+                printf("%i %i\n", ww, wh);
+            }
+        }
+    }
+
+
     Pixmap img = XCreatePixmap(dspl, win, ww, wh, DefaultDepth(dspl, DefaultScreen(dspl))); 
     XImage *ximage = XCreateImage(dspl, DefaultVisual(dspl, DefaultScreen(dspl)),
                                   DefaultDepth(dspl, DefaultScreen(dspl)),
@@ -54,6 +67,18 @@ void UpdateWindow(){
     XFreePixmap(dspl, img);
 
     XFlush(dspl);
+}
+
+void OnResize(){
+    scrnpxls = realloc(ww*wh*4); // test pattern
+    for(u_int16_t x = 0; x < ww; x++){
+        for(int16_t y = 0; y < wh; y++){
+            scrnpxls[(y*ww+x)*4 + 0] = x%255;
+            scrnpxls[(y*ww+x)*4 + 1] = y%255;
+            scrnpxls[(y*ww+x)*4 + 2] = x%255;
+            scrnpxls[(y*ww+x)*4 + 3] = 255;
+        }
+    }
 }
 
 void DestroyWindow(){

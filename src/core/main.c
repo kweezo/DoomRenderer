@@ -10,7 +10,7 @@
 int main(){
     CreateWindow(3860, 2160, false);
 
-    ImageData img = LoadBMP("res/test.bmp");
+    ImageData img = LoadBMP("res/test5.bmp");
     for(int x = 0; x < img.w; x++){
         for(int y = 0; y < img.h; y++){
             scrnpxls[(y*3860+x)*4 + 0 ] = img.dat[(y*img.w+x)*4 + 0 ];

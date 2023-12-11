@@ -5,13 +5,12 @@ Window win;
 GC gc;
 XEvent event;
 
-u_int8_t* scrnpxls;
-
-u_int16_t ww, wh;
+uint8_t* scrnpxls;
+uint16_t ww = 0, wh = 0; 
 
 void OnResize();
 
-bool CreateWindow(u_int16_t windowWidth, u_int16_t windowHeight, bool fullscreen){
+bool CreateWindow(uint16_t windowWidth, uint16_t windowHeight, bool fullscreen){
     //implement fullscreen
     ww = windowWidth;
     wh = windowHeight;
@@ -30,7 +29,7 @@ bool CreateWindow(u_int16_t windowWidth, u_int16_t windowHeight, bool fullscreen
     XResizeWindow(dspl, win, ww, wh);
 
     scrnpxls = malloc(ww*wh*4); // test pattern
-    for(u_int16_t x = 0; x < ww; x++){
+    for(uint16_t x = 0; x < ww; x++){
         for(int16_t y = 0; y < wh; y++){
             scrnpxls[(y*ww+x)*4 + 0] = x%255;
             scrnpxls[(y*ww+x)*4 + 1] = y%255;
@@ -51,15 +50,14 @@ void UpdateWindow(){
                 ww = event.xconfigure.width;
                 wh = event.xconfigure.height;
                 OnResize();
-                printf("%i %i\n", ww, wh);
             }
         }
     }
 
 
     Pixmap img = XCreatePixmap(dspl, win, ww, wh, DefaultDepth(dspl, DefaultScreen(dspl))); 
-    XImage *ximage = XCreateImage(dspl, DefaultVisual(dspl, DefaultScreen(dspl)),
-                                  DefaultDepth(dspl, DefaultScreen(dspl)),
+XImage *ximage = XCreateImage(dspl, DefaultVisual(dspl, DefaultScreen(dspl)),
+                                DefaultDepth(dspl, DefaultScreen(dspl)),
                                   ZPixmap, 0, scrnpxls, ww, wh, 32, 0);
 
     XPutImage(dspl, img, gc, ximage, 0, 0, 0, 0, ww, wh);
@@ -70,8 +68,8 @@ void UpdateWindow(){
 }
 
 void OnResize(){
-    scrnpxls = realloc(ww*wh*4); // test pattern
-    for(u_int16_t x = 0; x < ww; x++){
+    scrnpxls = realloc(scrnpxls, ww*wh*4); // test pattern
+    for(uint16_t x = 0; x < ww; x++){
         for(int16_t y = 0; y < wh; y++){
             scrnpxls[(y*ww+x)*4 + 0] = x%255;
             scrnpxls[(y*ww+x)*4 + 1] = y%255;

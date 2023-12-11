@@ -1,49 +1,59 @@
+#include <windows.h>
+#include <stdint.h>
+#include <stdbool.h>
 
-#include "window.h"
-#include "stdint.h"
-
-LPCWSTR szWindowClass = L"Win32WindowClass";
+LPCWSTR szWindowClass = L"Win32WindowClass"; // Change the type to LPCWSTR
 HWND window;
 BITMAPINFO bmi = {0};
-uint8_t *scrnpxls;
+uint8_t *scrnpxls = NULL;
+uint16_t ww = 0;
 
-uint16_t ww;
+bool CreateAppWindow(uint32_t width, uint32_t height, bool fullscreen);
+void DestroyAppWindow();
+void UpdateAppWindow();
+void DrawPixels(uint32_t width, uint32_t height);
+LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 bool CreateAppWindow(uint32_t width, uint32_t height, bool fullscreen)
 {
-    WNDCLASS wc = {0};
-    wc.lpfnWndProc = DefWindowProc;
+    // Register the window class
+    WNDCLASSW wc = {0}; // Use WNDCLASSW for wide character version
+    wc.lpfnWndProc = WindowProc;
     wc.hInstance = GetModuleHandle(NULL);
     wc.lpszClassName = szWindowClass;
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);
 
-    RegisterClass(&wc);
-
-    DWORD style = WS_OVERLAPPEDWINDOW;
-    DWORD exStyle = 0;
-
-    ww = width;
-    if (fullscreen)
+    if (!RegisterClassW(&wc))
     {
-        style = WS_POPUP;
-        exStyle = WS_EX_TOPMOST;
-    }
-
-    window = CreateWindowEx(exStyle, szWindowClass, L"Win32 Window", style,
-                            0, 0, width, height, NULL, NULL, GetModuleHandle(NULL), NULL);
-
-    if (!window)
-    {
-        MessageBox(NULL, L"Call to CreateWindow failed!", L"Win32 Window", MB_ICONERROR);
+        DWORD error = GetLastError();
+        // wprintf(L"Failed to register window class with error code %lu\n", error);
         return false;
     }
 
+    // Set window styles based on fullscreen mode
+    DWORD style = fullscreen ? WS_POPUP : WS_OVERLAPPEDWINDOW;
+    DWORD exStyle = fullscreen ? WS_EX_TOPMOST : 0;
+
+    // Create the window
+    window = CreateWindowExW(exStyle, szWindowClass, L"Win32 Window", style,
+                             0, 0, width, height, NULL, NULL, GetModuleHandle(NULL), NULL);
+
+    if (!window)
+    {
+        DWORD error = GetLastError();
+
+        MessageBoxW(NULL, L"Call to CreateWindow failed!", L"Win32 Window", MB_ICONERROR);
+        return false;
+    }
+
+    // Show and update the window
     ShowWindow(window, SW_SHOWNORMAL);
     UpdateWindow(window);
 
+    // Configure the bitmap information
     bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
     bmi.bmiHeader.biWidth = width;
-    bmi.bmiHeader.biHeight = -height;
+    bmi.bmiHeader.biHeight = -height; // Negative height for top-down bitmap
     bmi.bmiHeader.biPlanes = 1;
     bmi.bmiHeader.biBitCount = 32;
     bmi.bmiHeader.biCompression = BI_RGB;
@@ -51,12 +61,12 @@ bool CreateAppWindow(uint32_t width, uint32_t height, bool fullscreen)
     return true;
 }
 
-void DestroyWindow()
+void DestroyAppWindow()
 {
     DestroyWindow(window);
 }
 
-void UpdateWindow()
+void UpdateAppWindow()
 {
     UpdateWindow(window);
 }
@@ -80,29 +90,3 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     }
     return 0;
 }
-
-// int main()
-// {
-//     if (CreateWindow(640, 480, false))
-//     {
-//         // Your application logic here
-
-//         // For example, draw some pixels
-//         COLORREF pixels[640 * 480]; // Assuming a buffer for pixel data
-//         DrawPixels(pixels, 640, 480);
-
-//         // Update and process messages
-//         UpdateWindow();
-//         MSG msg = {0};
-//         while (GetMessage(&msg, NULL, 0, 0) > 0)
-//         {
-//             TranslateMessage(&msg);
-//             DispatchMessage(&msg);
-//         }
-
-//         // Cleanup
-//         DestroyWindow();
-//     }
-
-//     return 0;
-// }

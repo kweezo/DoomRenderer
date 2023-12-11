@@ -1,7 +1,11 @@
-//#ifndef WINDOWS_WINDOW_H
-//#define WINDOWS_WINDOW_H
-//#include <windows.h>
-//HWND CreateAppWindow(HINSTANCE hInstance, LPCWSTR title, int width, int height);
-//void DestroyAppWindow(HWND hwnd);
-//void DrawPixels(HWND hwnd, const COLORREF* pixels, int width, int height);
-//#endif
+
+#ifndef WINDOWS_WINDOW_H
+#define WINDOWS_WINDOW_H
+#include <windows.h>
+#include <stdbool.h>
+uint8_t *scrnpxls;
+bool CreateAppWindow(int width, int height, bool fullscreen);
+void DrawPixels(const COLORREF *pixels, int width, int height);
+void DestroyWindow();
+void UpdateWindow();
+#endif

@@ -7,6 +7,8 @@ HWND window;
 BITMAPINFO bmi = {0};
 uint8_t *scrnpxls;
 
+uint16_t ww;
+
 bool CreateAppWindow(uint32_t width, uint32_t height, bool fullscreen)
 {
     WNDCLASS wc = {0};
@@ -20,6 +22,7 @@ bool CreateAppWindow(uint32_t width, uint32_t height, bool fullscreen)
     DWORD style = WS_OVERLAPPEDWINDOW;
     DWORD exStyle = 0;
 
+    ww = width;
     if (fullscreen)
     {
         style = WS_POPUP;

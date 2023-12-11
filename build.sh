@@ -1,4 +1,4 @@
 #!/bin/bash
 
-gcc src/**/*.c -o bin/doom.a -lX11
-./bin/doom.a
+gcc -o bin/doom src/**/*.c -lX11 -lm
+./bin/doom
